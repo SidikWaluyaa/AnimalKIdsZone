@@ -40,6 +40,7 @@ interface DraggableItem {
   id: string;
   type: ItemType;
   image: string;
+  currentZone?: TargetType;
 }
 
 // Helper to get question by ID
@@ -120,7 +121,7 @@ export default function GameTwo() {
          if (targetZoneName === currentQ.targetZone) {
              playFlip(); // Success sound drop
              setItems(prev => prev.filter(i => i.id !== item.id));
-             setDroppedItems(prev => [...prev, item]);
+             setDroppedItems(prev => [...prev, { ...item, currentZone: targetZoneName }]);
          } else {
              playError(); // Wrong zone
          }
@@ -246,10 +247,10 @@ export default function GameTwo() {
                       <div className="text-sm font-bold opacity-50 mb-1 uppercase tracking-widest">{zone.id}</div>
                       <div className="text-4xl mb-2 opacity-50">{zone.icon}</div>
 
-                      {/* Stacked Items Grid */}
-                      <div className="grid grid-cols-2 w-full h-full content-center gap-1 p-1">
+                      {/* Stacked Items Container */}
+                      <div className="flex flex-wrap justify-center items-center content-center gap-1 w-full h-full p-1 overflow-hidden">
                           <AnimatePresence>
-                          {droppedItems.filter(() => currentQ.targetZone === zone.id).map((item) => (
+                          {droppedItems.filter(i => i.currentZone === zone.id).map((item) => (
                               <motion.div
                                 key={item.id}
                                 layoutId={item.id}
@@ -257,9 +258,9 @@ export default function GameTwo() {
                                 animate={{ scale: 1 }}
                                 exit={{ scale: 0 }}
                                 onClick={() => returnToPool(item)}
-                                className="w-10 h-10 bg-white rounded-lg shadow-sm p-1 cursor-pointer hover:scale-110 transition-transform"
+                                className="w-[30%] max-w-[40px] aspect-square bg-white rounded-lg shadow-sm p-1 cursor-pointer hover:scale-110 transition-transform relative"
                               >
-                                  <img src={item.image} className="w-full h-full object-contain" />
+                                  <img src={item.image} className="w-full h-full object-contain pointer-events-none" />
                               </motion.div>
                           ))}
                           </AnimatePresence>

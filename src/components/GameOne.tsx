@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import AnimatedCard from "./AnimatedCard";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, Timer, Hand, RefreshCw, Home, Star, Trophy } from "lucide-react";
 import Lottie from "lottie-react";
 import useGameAudio from "@/hooks/useGameAudio";
@@ -47,9 +47,16 @@ export default function GameOne() {
   const [wrongClicks, setWrongClicks] = useState(0);
   const [repeatedClicks, setRepeatedClicks] = useState(0);
   
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  // -- OPTIMIZATION STATE --
+  const [combo, setCombo] = useState(0);
+  const [lastMatchTime, setLastMatchTime] = useState(0);
+  const [showCombo, setShowCombo] = useState(false);
+  const [hintId, setHintId] = useState<number | null>(null);
 
-  // --- Game Setup ---
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // -- Game Setup --
   const startGame = (selectedLevel: 1 | 2 | 3) => {
     setInternalLevel(selectedLevel);
     setGameState("playing");
@@ -59,6 +66,11 @@ export default function GameOne() {
     setRepeatedClicks(0);
     setFlippedIds([]);
     setIsProcessing(false);
+    
+    // Reset Optimization State
+    setCombo(0);
+    setLastMatchTime(0);
+    setHintId(null);
 
     // Deck Logic
     let pairCount = 1;
@@ -89,13 +101,39 @@ export default function GameOne() {
   useEffect(() => {
     return () => {
         if (timerRef.current) clearInterval(timerRef.current);
+        if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
   }, []);
+
+  // -- IDLE HINT SYSTEM --
+  const resetIdleTimer = () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      setHintId(null);
+      
+      if (gameState === "playing") {
+          idleTimerRef.current = setTimeout(() => {
+              // Find a non-matched, non-flipped card to hint
+              const available = cards.filter(c => !c.isMatched && !c.isFlipped);
+              if (available.length > 0) {
+                  const randomCard = available[Math.floor(Math.random() * available.length)];
+                  setHintId(randomCard.id);
+                  // Optional: SFX for hint?
+              }
+          }, 8000); // 8 seconds idle
+      }
+  };
+
+  useEffect(() => {
+    resetIdleTimer();
+    return () => { if (idleTimerRef.current) clearTimeout(idleTimerRef.current); };
+  }, [gameState, cards, flippedIds]); // Reset on interaction
 
   // --- Interactions ---
   const handleCardClick = (id: number) => {
     if (gameState !== "playing" || isProcessing) return;
     
+    resetIdleTimer(); // User interacted
+
     // Check if clicking already flipped/matched
     const clickedCard = cards.find(c => c.id === id);
     if (!clickedCard || clickedCard.isFlipped || clickedCard.isMatched) {
@@ -123,6 +161,17 @@ export default function GameOne() {
             playMatch(); // SFX
             speak(`Hebat! Ini ${content1}!`); // TTS
             
+            // COMBO LOGIC
+            const now = Date.now();
+            if (now - lastMatchTime < 5000 && lastMatchTime !== 0) { // 5 seconds window
+                setCombo(c => c + 1);
+                setShowCombo(true);
+                setTimeout(() => setShowCombo(false), 2000);
+            } else {
+                setCombo(1); // Start Combo
+            }
+            setLastMatchTime(now);
+
             setTimeout(() => {
                 setCards(prev => prev.map(c => 
                     (c.id === firstId || c.id === id) ? { ...c, isMatched: true } : c
@@ -136,6 +185,7 @@ export default function GameOne() {
             setTimeout(() => playError(), 200); // Slight delay for SFX
             
             setWrongClicks(prev => prev + 1);
+            setCombo(0); // Reset combo
             setTimeout(() => {
                 setCards(prev => prev.map(c => 
                     (c.id === firstId || c.id === id) ? { ...c, isFlipped: false } : c
@@ -257,7 +307,24 @@ export default function GameOne() {
         </div>
 
         {/* Grid Container - Fully Responsive */}
-        <div className="w-full max-w-md flex-1 flex flex-col justify-center">
+        <div className="w-full max-w-md flex-1 flex flex-col justify-center relative">
+            
+            {/* Combo Popups */}
+            <AnimatePresence>
+                {showCombo && combo > 1 && (
+                    <motion.div 
+                        initial={{ scale: 0, rotate: -10 }}
+                        animate={{ scale: 1.5, rotate: 0 }}
+                        exit={{ scale: 0 }}
+                        className="absolute top-0 left-0 right-0 z-50 flex justify-center pointer-events-none"
+                    >
+                        <div className="bg-yellow-400 border-4 border-yellow-600 text-yellow-900 font-black px-6 py-2 rounded-full shadow-xl text-2xl rotate-[-5deg]">
+                            COMBO x{combo}!
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <div className={`grid gap-3 w-full ${
                 level === 1 ? 'grid-cols-2 max-w-[200px] mx-auto' : 
                 level === 2 ? 'grid-cols-3 max-w-[300px] mx-auto' : 
@@ -270,6 +337,7 @@ export default function GameOne() {
                         image={card.image}
                         isFlipped={card.isFlipped}
                         isMatched={card.isMatched}
+                        isHint={card.id === hintId}
                         onClick={() => handleCardClick(card.id)}
                     />
                 ))}

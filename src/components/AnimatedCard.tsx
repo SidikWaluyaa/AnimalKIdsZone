@@ -7,17 +7,25 @@ interface AnimatedCardProps {
   image?: string;
   isFlipped: boolean;
   isMatched: boolean;
+  isHint?: boolean;
   onClick: () => void;
 }
 
-export default function AnimatedCard({ content, image, isFlipped, isMatched, onClick }: AnimatedCardProps) {
+export default function AnimatedCard({ content, image, isFlipped, isMatched, isHint, onClick }: AnimatedCardProps) {
   return (
     <div className="relative w-full aspect-square perspective-1000 cursor-pointer" onClick={onClick}>
       <motion.div
         className="w-full h-full relative"
         initial={false}
-        animate={{ rotateY: isFlipped || isMatched ? 180 : 0 }}
-        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        animate={{ 
+            rotateY: isFlipped || isMatched ? 180 : 0,
+            x: isHint ? [0, -5, 5, -5, 5, 0] : 0,
+            scale: isHint ? 1.05 : 1
+        }}
+        transition={{ 
+            type: "spring", stiffness: 260, damping: 20,
+            x: { duration: 0.5, repeat: isHint ? Infinity : 0, repeatDelay: 1 } 
+        }}
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Front (Cover) */}
