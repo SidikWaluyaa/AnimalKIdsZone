@@ -42,20 +42,38 @@ interface DraggableItem {
   image: string;
 }
 
+// Helper to get question by ID
+const generateQuestion = (id: number): Question => {
+  const existing = QUESTIONS.find((q) => q.id === id);
+  if (existing) return existing;
+
+  // Fallback for ID > QUESTIONS.length (e.g. question 5)
+  // Reuse a previous question template but keep the new ID
+  const template = QUESTIONS[(id - 1) % QUESTIONS.length];
+  return { ...template, id };
+};
+
 export default function GameTwo() {
   const { setStep } = useGameStore();
   const { playFlip, playMatch, playError, speak } = useGameAudio();
   
   const [currentQIndex, setCurrentQIndex] = useState(0);
+  // Initialize with the first generated question
+  const [currentQ, setCurrentQ] = useState<Question>(generateQuestion(1)); 
   const [items, setItems] = useState<DraggableItem[]>([]);
   const [droppedItems, setDroppedItems] = useState<DraggableItem[]>([]); 
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [score, setScore] = useState(0); 
+
+  const MAX_QUESTIONS = 5; 
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const zonesRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  const currentQ = QUESTIONS[currentQIndex];
+  // Removed old currentQ
+ // Will be replaced by state soon
+
 
   // -- INIT QUESTION --
   useEffect(() => {
@@ -113,6 +131,7 @@ export default function GameTwo() {
       if (droppedItems.length === currentQ.targetCount) {
           playMatch();
           setIsCorrect(true);
+          setScore(s => s + 20); // 20 pts per question * 5 questions = 100
           confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
           speak("Luar biasa! Kamu benar!");
       } else {
@@ -124,12 +143,13 @@ export default function GameTwo() {
   };
 
   const nextQuestion = () => {
-      if (currentQIndex < QUESTIONS.length - 1) {
+      if (currentQIndex < MAX_QUESTIONS - 1) { // 0 to 4
           setCurrentQIndex(p => p + 1);
+          setCurrentQ(generateQuestion(currentQIndex + 2)); // Generate Next
       } else {
           useGameStore.getState().addHistory({
             gameType: 'game2',
-            score: 100,
+            score: score + 20, // Add final round score
             timeElapsed: timeElapsed
           });
           useGameStore.getState().setLastPlayedGame('game2');
@@ -161,7 +181,7 @@ export default function GameTwo() {
                     <Timer size={18} /> {Math.floor(timeElapsed / 60)}:{String(timeElapsed % 60).padStart(2, '0')}
                 </div>
                 <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-2xl shadow-md text-orange-500 font-bold border-b-4 border-orange-100">
-                    <Star size={18} fill="orange" stroke="none" /> {currentQIndex + 1}/{QUESTIONS.length}
+                    <Star size={18} fill="orange" stroke="none" /> {currentQIndex + 1}/{MAX_QUESTIONS}
                 </div>
             </div>
        </div>
@@ -226,8 +246,8 @@ export default function GameTwo() {
                       <div className="text-sm font-bold opacity-50 mb-1 uppercase tracking-widest">{zone.id}</div>
                       <div className="text-4xl mb-2 opacity-50">{zone.icon}</div>
 
-                      {/* Stacked Items */}
-                      <div className="flex flex-wrap justify-center gap-1 w-full flex-1 content-start">
+                      {/* Stacked Items Grid */}
+                      <div className="grid grid-cols-2 w-full h-full content-center gap-1 p-1">
                           <AnimatePresence>
                           {droppedItems.filter(() => currentQ.targetZone === zone.id).map((item) => (
                               <motion.div
