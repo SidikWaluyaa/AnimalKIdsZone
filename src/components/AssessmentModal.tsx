@@ -1,65 +1,155 @@
 "use client";
 
 import { useGameStore } from "@/store/useGameStore";
-import { motion, AnimatePresence } from "framer-motion";
-import { RotateCw } from "lucide-react";
+import { motion } from "framer-motion";
+import { RotateCw, Home, Timer, Star, Calculator, Target, BookOpen } from "lucide-react";
 
 export default function AssessmentModal() {
-  const { currentStep, analytics, resetGame, userName } = useGameStore();
+  const { currentStep, resetGame, userName, lastPlayedGame, setStep, history, analytics } = useGameStore();
 
   if (currentStep !== "summary") return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl text-center border-4 border-yellow-400 relative overflow-hidden"
-      >
-        <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-pink-400 via-yellow-400 to-blue-400" />
-        
-        <h2 className="text-3xl font-bold text-purple-600 mb-2 font-quicksand">Hebat, {userName}!</h2>
-        <p className="text-gray-500 mb-6 text-lg">Kamu sudah menyelesaikan semua permainan!</p>
+  // Get latest game data from history to ensure accurate Time/Score
+  const latestGame = history.length > 0 ? history[0] : null;
+  const timeElapsed = latestGame ? latestGame.timeElapsed : 0;
+  const score = latestGame ? latestGame.score : 0;
 
-        <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="bg-pink-100 p-4 rounded-2xl">
-                <div className="text-sm text-pink-600 font-bold mb-1">Daya Ingat</div>
-                <div className="text-2xl font-black text-pink-800">
-                    {analytics.wrongClicks === 0 ? "Sempurna!" : `${analytics.wrongClicks} Salah`}
-                </div>
-            </div>
-            <div className="bg-blue-100 p-4 rounded-2xl">
-                <div className="text-sm text-blue-600 font-bold mb-1">Fokus</div>
-                <div className="text-2xl font-black text-blue-800">
-                    {analytics.wrongClicks < 5 ? "Tinggi" : "Sedang"}
-                </div>
-            </div>
-             <div className="bg-purple-100 p-4 rounded-2xl">
-                <div className="text-sm text-purple-600 font-bold mb-1">Kesabaran</div>
-                <div className="text-2xl font-black text-purple-800">
-                    {analytics.repeatedClicks === 0 ? "Sabar" : "Cukup"}
-                </div>
-            </div>
-            <div className="bg-green-100 p-4 rounded-2xl">
-                <div className="text-sm text-green-600 font-bold mb-1">Berhitung</div>
-                <div className="text-2xl font-black text-green-800">OK</div>
-            </div>
-            <div className="bg-orange-100 p-4 rounded-2xl">
-                <div className="text-sm text-orange-600 font-bold mb-1">Waktu</div>
-                <div className="text-2xl font-black text-orange-800">Cepat!</div>
-            </div>
+  // Helper to format time
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const isGame2 = lastPlayedGame === 'game2';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 font-quicksand">
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0, rotate: -2 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        className="bg-white rounded-[40px] p-8 max-w-sm w-full shadow-2xl text-center relative overflow-hidden ring-8 ring-white/50"
+      >
+        {/* Background blobs for cuteness */}
+        <div className="absolute top-[-20px] left-[-20px] w-24 h-24 bg-yellow-100 rounded-full opacity-50 pointer-events-none" />
+        <div className="absolute bottom-[-10px] right-[-10px] w-32 h-32 bg-orange-100 rounded-full opacity-50 pointer-events-none" />
+
+        {/* Confetti / Title */}
+        <div className="flex flex-col items-center mb-6 relative z-10">
+             {isGame2 ? (
+                 <motion.div 
+                    animate={{ y: [0, -10, 0] }} 
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="text-7xl mb-2 drop-shadow-md"
+                 >
+                    🧮
+                 </motion.div> 
+             ) : (
+                 <motion.div 
+                    animate={{ scale: [1, 1.1, 1] }} 
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                    className="text-7xl mb-2 drop-shadow-md"
+                 >
+                    🏆
+                 </motion.div>
+             )}
+            <h2 className="text-3xl font-black text-orange-500 mb-1 drop-shadow-sm">
+                {isGame2 ? "Pintar Sekali! 🎉" : `Hebat, ${userName}!`}
+            </h2>
         </div>
 
-        <p className="text-xl font-bold text-gray-700 italic mb-8">"Terus Berlatih ya!"</p>
+        {/* Metrics Container */}
+        <div className="space-y-3 mb-8 relative z-10">
+            {/* Time */}
+            <div className="flex justify-between items-center bg-orange-50 px-4 py-3 rounded-2xl border border-orange-100">
+                <div className="flex items-center gap-3 text-gray-500 font-bold">
+                    <Timer size={20} className="text-gray-400" /> Waktu
+                </div>
+                <div className="text-orange-500 font-black text-xl">
+                    {formatTime(timeElapsed)}
+                </div>
+            </div>
 
-        <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={resetGame}
-            className="w-full py-4 rounded-full bg-yellow-400 text-yellow-900 text-xl font-bold shadow-lg flex items-center justify-center gap-2"
-        >
-            <RotateCw /> Main Lagi
-        </motion.button>
+            {/* Score */}
+            <div className="flex justify-between items-center bg-orange-50 px-4 py-3 rounded-2xl border border-orange-100">
+                <div className="flex items-center gap-3 text-gray-500 font-bold">
+                    <Star size={20} className="text-yellow-400 fill-yellow-400" /> Skor
+                </div>
+                <div className="text-orange-500 font-black text-xl">
+                    {score}/100
+                </div>
+            </div>
+
+            {/* Game 2 Specifics (Mocked based on reference) */}
+            {isGame2 ? (
+                <>
+                    <div className="flex justify-between items-center bg-orange-50 px-4 py-3 rounded-2xl border border-orange-100">
+                        <div className="flex items-center gap-3 text-gray-500 font-bold">
+                            <Calculator size={20} className="text-blue-400" /> Menghitung
+                        </div>
+                        <div className="text-orange-500 font-bold text-lg">Sangat Baik!</div>
+                    </div>
+                    <div className="flex justify-between items-center bg-orange-50 px-4 py-3 rounded-2xl border border-orange-100">
+                        <div className="flex items-center gap-3 text-gray-500 font-bold">
+                            <Target size={20} className="text-red-400" /> Fokus
+                        </div>
+                        <div className="text-orange-500 font-bold text-lg">Sangat Fokus!</div>
+                    </div>
+                    <div className="flex justify-between items-center bg-orange-50 px-4 py-3 rounded-2xl border border-orange-100">
+                        <div className="flex items-center gap-3 text-gray-500 font-bold">
+                            <BookOpen size={20} className="text-green-400" /> Hafal Bilangan
+                        </div>
+                        <div className="text-orange-500 font-bold text-lg">Hafal!</div>
+                    </div>
+                </>
+            ) : (
+                // Game 1 Specifics
+                <>
+                    <div className="flex justify-between items-center bg-orange-50 px-4 py-3 rounded-2xl border border-orange-100">
+                        <div className="flex items-center gap-3 text-gray-500 font-bold">
+                             {/* Icon for Attempts */}
+                            <Target size={20} className="text-purple-400" /> Percobaan
+                        </div>
+                        <div className="text-orange-500 font-bold text-lg">{analytics.attempts || 0} kali</div>
+                    </div>
+                    <div className="flex justify-between items-center bg-orange-50 px-4 py-3 rounded-2xl border border-orange-100">
+                        <div className="flex items-center gap-3 text-gray-500 font-bold">
+                             {/* Icon for Memory */}
+                            <BookOpen size={20} className="text-blue-400" /> Daya Ingat
+                        </div>
+                        <div className="text-orange-500 font-bold text-lg">Sangat Baik!</div>
+                    </div>
+                    <div className="flex justify-between items-center bg-orange-50 px-4 py-3 rounded-2xl border border-orange-100">
+                        <div className="flex items-center gap-3 text-gray-500 font-bold">
+                            <Target size={20} className="text-red-400" /> Fokus
+                        </div>
+                        <div className="text-orange-500 font-bold text-lg">Sangat Fokus!</div>
+                    </div>
+                </>
+            )}
+        </div>
+
+        {/* Buttons */}
+        <div className="flex gap-3 relative z-10">
+             <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={resetGame}
+                className="flex-1 py-4 rounded-[20px] bg-orange-500 text-white font-bold shadow-[0_4px_0_theme(colors.orange.700)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2"
+            >
+                <RotateCw size={20} /> Main Lagi
+            </motion.button>
+            
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setStep("menu")}
+                className="flex-1 py-4 rounded-[20px] bg-gray-100 text-gray-600 font-bold shadow-[0_4px_0_theme(colors.gray.200)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2 border border-gray-200"
+            >
+                <Home size={20} /> Menu Utama
+            </motion.button>
+        </div>
+
       </motion.div>
     </div>
   );

@@ -3,40 +3,37 @@
 import { useState, useRef, useEffect } from "react";
 import { useGameStore } from "@/store/useGameStore";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, CheckCircle2, RotateCcw, Star, Timer } from "lucide-react";
+import { ChevronLeft, CheckCircle2, RotateCcw, Star, Timer, MousePointer2 } from "lucide-react";
 import useGameAudio from "@/hooks/useGameAudio";
 import confetti from "canvas-confetti";
 
 // -- TYPES --
-type TargetType = "Kandang" | "Taman" | "Ember" | "Kelinci";
-type ItemType = "Singa" | "Wortel" | "Kucing" | "Katak";
+type TargetType = "Kandang" | "Taman" | "Rumah" | "Kolam";
+type ItemType = "Panda" | "Kelinci" | "Kucing" | "Beruang";
 
 interface Question {
   id: number;
   text: string;
   targetCount: number;
-  itemType: ItemType;     // What to drag
-  targetZone: TargetType; // Where to drag
-  distractors: ItemType[]; // Other items to confuse? (Optional, kept simple for now)
+  itemType: ItemType;     
+  targetZone: TargetType; 
 }
 
-// -- DATA --
+// -- DATA (Matched to available assets) --
 const QUESTIONS: Question[] = [
-  { id: 1, text: "Masukkan 2 singa ke dalam kandang 🦁", targetCount: 2, itemType: "Singa", targetZone: "Kandang", distractors: ["Singa", "Singa", "Singa"] },
-  { id: 2, text: "Berikan 3 wortel kepada kelinci 🐰", targetCount: 3, itemType: "Wortel", targetZone: "Kelinci", distractors: [] },
-  { id: 3, text: "Pindahkan 2 kucing ke taman 🌳", targetCount: 2, itemType: "Kucing", targetZone: "Taman", distractors: [] },
-  { id: 4, text: "Masukan 5 katak kedalam ember 🪣", targetCount: 5, itemType: "Katak", targetZone: "Ember", distractors: [] },
+  { id: 1, text: "Masukkan 2 Panda ke dalam kandang 🎋", targetCount: 2, itemType: "Panda", targetZone: "Kandang" },
+  { id: 2, text: "Kumpulkan 3 Kelinci di taman 🥕", targetCount: 3, itemType: "Kelinci", targetZone: "Taman" },
+  { id: 3, text: "Pindahkan 2 Kucing ke rumah 🏠", targetCount: 2, itemType: "Kucing", targetZone: "Rumah" },
+  { id: 4, text: "Ajak 4 Beruang bermain di kolam 🐻", targetCount: 4, itemType: "Beruang", targetZone: "Kolam" },
 ];
 
 const ASSETS = {
-  Singa: "/basket/basket_lion.png",
-  Wortel: "/basket/basket_carrot.png",
-  KelinciItem: "/basket/basket_rabbit.png", // Just in case needed as item
-  Kucing: "/basket/basket_cat.png",
-  Katak: "/basket/basket_frog.png",
-  // Targets
-  Tree: "/basket/basket_tree.png",
-  RabbitTarget: "/basket/basket_rabbit.png",
+  Panda: "/animals/panda.png",
+  Kelinci: "/animals/rabbit.png",
+  Kucing: "/animals/cat.png",
+  Beruang: "/animals/bear.png",
+  // Fallbacks/Extras
+  Fox: "/animals/fox.png", 
 };
 
 interface DraggableItem {
@@ -46,35 +43,33 @@ interface DraggableItem {
 }
 
 export default function GameTwo() {
-  const { setStep, updateAnalytics } = useGameStore();
+  const { setStep } = useGameStore();
   const { playFlip, playMatch, playError, speak } = useGameAudio();
   
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [items, setItems] = useState<DraggableItem[]>([]);
-  const [droppedItems, setDroppedItems] = useState<DraggableItem[]>([]); // Items in the correct zone
+  const [droppedItems, setDroppedItems] = useState<DraggableItem[]>([]); 
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  
-  // Stats
   const [timeElapsed, setTimeElapsed] = useState(0);
+  
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const zonesRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const currentQ = QUESTIONS[currentQIndex];
 
   // -- INIT QUESTION --
   useEffect(() => {
-    // Generate items: Target count + some extras? 
-    // For simplicity based on screenshot: Just provide exactly 4 items for Q1 if screenshot shows 4 lions?
-    // User req: "Masukan 2 singa" -> but screenshot shows 4 lions available. So user must pick 2.
-    // Let's generate (Target + 2) items to make it a challenge.
-    
-    const countToGenerate = currentQ.targetCount + 2; 
+    // Generate items: Target count + 2 distractors (same type for now to test counting, or mixed?)
+    // User wants "funny" -> let's mix in a distractor? 
+    // For simplicity of "Count logic", let's just use the requested type but more of them.
+    const countToGenerate = currentQ.targetCount + 3; 
     const newItems: DraggableItem[] = Array.from({ length: countToGenerate }).map((_, i) => ({
       id: `item-${currentQ.id}-${i}`,
       type: currentQ.itemType,
-      image: ASSETS[currentQ.itemType] || ASSETS.Singa // fallback
+      image: ASSETS[currentQ.itemType]
     }));
 
-    setItems(newItems);
+    setItems(newItems.sort(() => Math.random() - 0.5));
     setDroppedItems([]);
     setIsCorrect(null);
     speak(currentQ.text);
@@ -87,39 +82,7 @@ export default function GameTwo() {
     return () => clearInterval(timerRef.current!);
   }, []);
 
-  // -- HANDLERS --
-  const handleDragEnd = (event: any, info: any, item: DraggableItem) => {
-    // Simple logic: if dropped in the MAIN target zone (we highlight strictly).
-    // In this simplified version, we'll assume any drop in the general "Lower Area" or specific zone is what we check.
-    // To make it precise, we'd need exact refs. 
-    // Let's use a simpler approach: Validate "Check Answer" button rather than immediate drop success?
-    // Screenshot shows "Periksa Jawaban" -> So we allow moving items to zones.
-    // But Framer Motion drag needs visual "drop".
-    
-    // For this prototype: Assume there are 4 distinct zones. 
-    // We need to know WHERE it was dropped.
-    // Let's simplfy: The user drags from Top Container -> Bottom Container.
-    
-    // Actually, looking at screenshot: "Drag hewan ke zona yang benar".
-    // There are 4 zone boxes.
-    // If I drop "Lion" on "Kandang", it stays.
-    // If I drop "Lion" on "Ember", maybe it stays too but is wrong?
-    // OR we only allow dropping on the CORRECT zone to keep it simple for kids?
-    // Let's try: Drop anywhere in bottom area = "placed". 
-    // Then "Periksa" counts how many are in the CORRECT target box.
-    
-    // We'll implementation "Snap to Zone" logic would be complex without multiple refs.
-    // Short cut: Simply checking if dropped roughly over the correct target index.
-    // We visualize this by removing from "Pool" and adding to "Zone State".
-  };
-
-  // Improved Drop Logic:
-  // Since we can't easily detect generic elements without extensive refs, 
-  // we will make the target zones "Droppable" via state logic if we had DnD library.
-  // With Framer Motion, we check coordinates.
-  
-  const zonesRef = useRef<(HTMLDivElement | null)[]>([]);
-  
+  // -- DND HANDLERS --
   const checkDrop = (e: any, info: any, item: DraggableItem) => {
      const point = info.point;
      let landedZoneIndex = -1;
@@ -132,37 +95,31 @@ export default function GameTwo() {
         }
      });
 
-     // Map index to Zone Type
-     const zones: TargetType[] = ["Kandang", "Taman", "Ember", "Kelinci"];
+     const zones: TargetType[] = ["Kandang", "Taman", "Rumah", "Kolam"];
      const targetZoneName = zones[landedZoneIndex];
 
      if (landedZoneIndex !== -1) {
-         // Check if this is the RIGHT zone for the current question?
-         // User might put Lion in Bucket. allowed? yes, but "Periksa" will fail.
-         // OR strict mode: specific zone only accepts specific item?
-         // Let's do Strict for "Safety" -> If dropped on Wrong Zone, bounce back.
-         
          if (targetZoneName === currentQ.targetZone) {
-             playFlip();
+             playFlip(); // Success sound drop
              setItems(prev => prev.filter(i => i.id !== item.id));
              setDroppedItems(prev => [...prev, item]);
          } else {
-             playError();
+             playError(); // Wrong zone
          }
      }
   };
 
   const handleCheck = () => {
-      // Validate Count
       if (droppedItems.length === currentQ.targetCount) {
           playMatch();
           setIsCorrect(true);
-          confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-          speak("Hebat! Jawabanmu benar!");
+          confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+          speak("Luar biasa! Kamu benar!");
       } else {
           playError();
           setIsCorrect(false);
-          speak(droppedItems.length < currentQ.targetCount ? "Masih kurang, ayo tambah lagi!" : "Kebanyakan! Coba kurangi.");
+          const msg = droppedItems.length < currentQ.targetCount ? "Masih kurang nih!" : "Wah, kebanyakan!";
+          speak(msg);
       }
   };
 
@@ -170,166 +127,171 @@ export default function GameTwo() {
       if (currentQIndex < QUESTIONS.length - 1) {
           setCurrentQIndex(p => p + 1);
       } else {
+          useGameStore.getState().addHistory({
+            gameType: 'game2',
+            score: 100,
+            timeElapsed: timeElapsed
+          });
+          useGameStore.getState().setLastPlayedGame('game2');
           setStep("summary");
       }
   };
-  
-  // Reset for current level if wrong too many times? Or just let them fix it.
-  // We allow dragging BACK from zone to pool?
+
   const returnToPool = (item: DraggableItem) => {
       setDroppedItems(prev => prev.filter(i => i.id !== item.id));
       setItems(prev => [...prev, item]);
   };
 
   return (
-    <div className="min-h-[100svh] bg-yellow-50 flex flex-col items-center p-4 font-quicksand relative overflow-hidden">
-       {/* Background Decoration */}
-       <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20 bg-cloud-pattern" />
+    <div className="min-h-[100svh] bg-cloud-pattern flex flex-col items-center p-4 font-quicksand relative overflow-hidden">
+        {/* Blobs */}
+        <div className="absolute top-[-50px] left-[-50px] w-32 h-32 bg-green-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob" />
+        <div className="absolute bottom-[-50px] right-[-50px] w-32 h-32 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob animation-delay-2000" />
 
        {/* Header */}
-       <div className="w-full max-w-md flex justify-between items-center mb-6 z-10">
-            <button onClick={() => setStep("menu")} className="bg-white p-2 rounded-full shadow-md">
-                <ChevronLeft className="text-gray-600" />
+       <div className="w-full max-w-lg flex items-center justify-between mb-2 z-10">
+            <button 
+                onClick={() => setStep("menu")} 
+                className="bg-orange-500 text-white w-12 h-12 flex items-center justify-center rounded-2xl shadow-lg border-b-4 border-orange-700 active:border-b-0 active:translate-y-1 transition-all"
+            >
+                <ChevronLeft size={32} strokeWidth={3} />
             </button>
-             <div className="flex gap-4">
-                <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm text-purple-600 font-bold">
+             <div className="flex gap-3">
+                <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-2xl shadow-md text-purple-600 font-bold border-b-4 border-purple-100">
                     <Timer size={18} /> {Math.floor(timeElapsed / 60)}:{String(timeElapsed % 60).padStart(2, '0')}
                 </div>
-                <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm text-yellow-500 font-bold">
-                    <Star size={18} fill="gold" stroke="none" /> {currentQIndex * 10}
+                <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-2xl shadow-md text-orange-500 font-bold border-b-4 border-orange-100">
+                    <Star size={18} fill="orange" stroke="none" /> {currentQIndex + 1}/{QUESTIONS.length}
                 </div>
             </div>
        </div>
 
-       {/* Instruction Bar (Green) */}
+       {/* Instruction Bar */}
        <motion.div 
-         key={currentQ.text}
          initial={{ y: -20, opacity: 0 }}
          animate={{ y: 0, opacity: 1 }}
-         className="w-full max-w-md bg-green-500 text-white p-4 rounded-2xl shadow-lg mb-6 text-center z-10 relative overflow-hidden"
+         className="w-full max-w-lg bg-green-500 text-white p-4 rounded-3xl shadow-xl mb-4 text-center z-10 relative overflow-hidden border-b-8 border-green-700"
        >
-           <h2 className="text-lg md:text-xl font-bold">{currentQ.text}</h2>
-           {/* Progress Indicator */}
-           <div className="absolute bottom-0 left-0 h-1 bg-green-700 transition-all duration-500" style={{ width: `${((currentQIndex + 1) / QUESTIONS.length) * 100}%` }} />
+           <h2 className="text-xl md:text-2xl font-black drop-shadow-md flex items-center justify-center gap-3">
+               {currentQ.text} 
+               <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 2 }}>👇</motion.span>
+           </h2>
        </motion.div>
 
-       {/* Game Container */}
-       <div className="w-full max-w-md bg-white/80 backdrop-blur-sm rounded-3xl p-4 shadow-xl border-4 border-white z-10 flex-1 flex flex-col">
-          <div className="flex justify-between items-center mb-4 text-gray-500 font-bold text-sm">
-              <span>Tugas {currentQIndex + 1} dari {QUESTIONS.length}</span>
-              <button 
-                onClick={() => { setItems([...items, ...droppedItems]); setDroppedItems([]); }}
-                className="p-1 hover:bg-gray-100 rounded-full"
-              >
-                  <RotateCcw size={16} />
-              </button>
+       {/* Main Area */}
+       <div className="w-full max-w-lg flex-1 flex flex-col z-10">
+          
+          {/* ITEM POOL (Upper Area) */}
+          <div className="bg-white/60 backdrop-blur-md rounded-3xl p-4 mb-4 min-h-[140px] flex items-center justify-center gap-2 flex-wrap shadow-lg border-2 border-white/50 relative">
+             <div className="absolute top-2 left-4 text-xs font-bold text-gray-400 flex items-center gap-1 uppercase tracking-wider">
+                <MousePointer2 size={12} /> Ambil dari sini
+             </div>
+             
+             <AnimatePresence>
+             {items.map(item => (
+                 <motion.div
+                    key={item.id}
+                    layoutId={item.id}
+                    drag
+                    dragSnapToOrigin
+                    dragElastic={0.1}
+                    dragMomentum={false}
+                    whileDrag={{ scale: 1.2, zIndex: 100, rotate: [0, -10, 10, 0] }}
+                    whileHover={{ scale: 1.1, cursor: 'grab', rotate: [0, -5, 5, 0] }}
+                    onDragEnd={(e, info) => checkDrop(e, info, item)}
+                    className="w-20 h-20 bg-white rounded-2xl shadow-[0_4px_0_theme(colors.gray.200)] border-2 border-gray-100 p-2 flex items-center justify-center touch-none cursor-grab active:cursor-grabbing"
+                 >
+                    <img src={item.image} alt={item.type} className="w-full h-full object-contain pointer-events-none select-none drop-shadow-sm" />
+                 </motion.div>
+             ))}
+             </AnimatePresence>
+             
+             {items.length === 0 && droppedItems.length === 0 && <span className="text-gray-400">Loading...</span>}
+             {items.length === 0 && droppedItems.length > 0 && <span className="text-gray-400 font-bold">Kosong! Pindahkan kembali jika salah.</span>}
           </div>
 
-          {/* ITEM POOL */}
-          <div className="bg-blue-50 rounded-2xl p-6 mb-6 min-h-[120px] flex items-center justify-center gap-4 flex-wrap shadow-inner">
-             {items.length === 0 && droppedItems.length === 0 ? (
-                 <span className="text-gray-400 italic">Memuat...</span>
-             ) : items.length === 0 ? (
-                 <span className="text-gray-400 italic font-bold">Kosong!</span>
-             ) : (
-                 items.map(item => (
-                     <motion.div
-                        key={item.id}
-                        drag
-                        dragSnapToOrigin
-                        dragElastic={0.1}
-                        dragMomentum={false}
-                        whileDrag={{ scale: 1.2, zIndex: 50, cursor: 'grabbing' }}
-                        whileHover={{ scale: 1.1, cursor: 'grab' }}
-                        onDragEnd={(e, info) => checkDrop(e, info, item)}
-                        className="w-16 h-16 bg-white rounded-xl shadow-md border-2 border-gray-100 p-1"
-                     >
-                        <img src={item.image} alt={item.type} className="w-full h-full object-contain pointer-events-none" />
-                     </motion.div>
-                 ))
-             )}
-          </div>
-
-          {/* TARGET ZONES */}
-          <div className="grid grid-cols-4 gap-2 mb-6">
+          {/* TARGET ZONES (Lower Area) */}
+          <div className="grid grid-cols-2 gap-3 mb-4 flex-1">
               {[
-                { id: "Kandang", label: "Kandang", bg: "bg-orange-100", border: "border-orange-300", icon: "🏠" }, // Placeholder icon if House image fails
-                { id: "Taman", label: "Taman", bg: "bg-green-100", border: "border-green-300", img: ASSETS.Tree },
-                { id: "Ember", label: "Ember", bg: "bg-blue-100", border: "border-blue-300", icon: "🪣" },
-                { id: "Kelinci", label: "Kelinci", bg: "bg-pink-100", border: "border-pink-300", img: ASSETS.RabbitTarget },
+                { id: "Kandang", bg: "bg-orange-100", border: "border-orange-300", icon: "🎋" },
+                { id: "Taman", bg: "bg-green-100", border: "border-green-300", icon: "🌳" },
+                { id: "Rumah", bg: "bg-blue-100", border: "border-blue-300", icon: "🏠" },
+                { id: "Kolam", bg: "bg-cyan-100", border: "border-cyan-300", icon: "💧" },
               ].map((zone, idx) => (
                   <div 
                     key={zone.id}
                     ref={el => { zonesRef.current[idx] = el }}
-                    className={`aspect-square rounded-xl ${zone.bg} border-2 ${zone.border} ${zone.border === "border-pink-300" ? "border-dashed" : "border-dashed"} flex flex-col items-center justify-start p-1 relative pt-6 overflow-hidden transition-all duration-300 ${currentQ.targetZone === zone.id ? "ring-2 ring-offset-2 ring-green-400 scale-105" : "opacity-60 grayscale"}`}
+                    className={`rounded-3xl ${zone.bg} border-4 ${zone.border} ${currentQ.targetZone === zone.id ? "ring-4 ring-yellow-400 scale-[1.02] shadow-xl bg-opacity-100 border-solid" : "opacity-70 grayscale-[0.3] border-dashed border-2"} flex flex-col items-center p-2 relative transition-all duration-300`}
                   >
-                      {/* Background Icon/Image */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-30 mt-4 pointer-events-none">
-                          {zone.img ? (
-                              <img src={zone.img} className="w-10 h-10 object-contain" />
-                          ) : (
-                              <span className="text-2xl">{zone.icon}</span>
-                          )}
-                      </div>
+                      <div className="text-sm font-bold opacity-50 mb-1 uppercase tracking-widest">{zone.id}</div>
+                      <div className="text-4xl mb-2 opacity-50">{zone.icon}</div>
 
-                      {/* Dropped Items Stack */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                          {droppedItems.filter(() => currentQ.targetZone === zone.id).map((item, i) => ( // Only show in correct zone for now as logic is specific
+                      {/* Stacked Items */}
+                      <div className="flex flex-wrap justify-center gap-1 w-full flex-1 content-start">
+                          <AnimatePresence>
+                          {droppedItems.filter(() => currentQ.targetZone === zone.id).map((item) => (
                               <motion.div
                                 key={item.id}
                                 layoutId={item.id}
-                                className="w-10 h-10 absolute shadow-sm"
-                                style={{ marginLeft: i * 5, marginTop: i * 2 }}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                exit={{ scale: 0 }}
                                 onClick={() => returnToPool(item)}
+                                className="w-10 h-10 bg-white rounded-lg shadow-sm p-1 cursor-pointer hover:scale-110 transition-transform"
                               >
                                   <img src={item.image} className="w-full h-full object-contain" />
                               </motion.div>
                           ))}
-                           {/* Count Badge */}
-                           {currentQ.targetZone === zone.id && droppedItems.length > 0 && (
-                               <div className="absolute bottom-1 right-1 bg-green-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm">
-                                   {droppedItems.length}
-                               </div>
-                           )}
+                          </AnimatePresence>
                       </div>
                   </div>
               ))}
           </div>
 
-          {/* Action Button */}
+          {/* Footer Controls */}
           {isCorrect === true ? (
              <motion.button
                 initial={{ scale: 0.8 }}
                 animate={{ scale: 1 }}
                 onClick={nextQuestion}
-                className="w-full py-3 bg-blue-500 text-white rounded-2xl font-bold text-lg shadow-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-4 bg-yellow-400 text-yellow-900 rounded-2xl font-black text-xl shadow-[0_6px_0_theme(colors.yellow.600)] active:shadow-none active:translate-y-2 transition-all flex items-center justify-center gap-2"
              >
-                 Lanjut <ChevronLeft className="rotate-180" />
+                 Lanjut <ChevronLeft className="rotate-180" strokeWidth={3} />
              </motion.button>
           ) : (
             <button
                 onClick={handleCheck}
-                className={`w-full py-3 rounded-2xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all ${
-                    droppedItems.length > 0 
-                    ? "bg-green-500 text-white hover:bg-green-600" 
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
                 disabled={droppedItems.length === 0}
+                className={`w-full py-4 rounded-2xl font-black text-xl shadow-[0_6px_0_rgba(0,0,0,0.1)] active:shadow-none active:translate-y-2 transition-all flex items-center justify-center gap-2 ${
+                    droppedItems.length > 0 
+                    ? "bg-green-500 text-white shadow-[0_6px_0_theme(colors.green.700)]" 
+                    : "bg-gray-200 text-gray-400"
+                }`}
             >
-                <CheckCircle2 size={20} /> Periksa Jawaban
+                <CheckCircle2 size={24} strokeWidth={3} /> Periksa Jawaban
             </button>
           )}
-
-          {/* Feedback Message */}
+          
+          {/* Feedback Toast */}
           <AnimatePresence>
             {isCorrect === false && (
                 <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="text-center text-red-500 font-bold mt-2 text-sm"
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
+                    className="absolute bottom-24 left-0 right-0 mx-auto w-max bg-red-500 text-white font-bold px-6 py-2 rounded-full shadow-lg z-50 flex items-center gap-2"
                 >
-                    Belum tepat! Coba hitung lagi ya.
+                    <span>🚫 Coba hitung lagi ya!</span>
+                </motion.div>
+            )}
+            {isCorrect === true && (
+                <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1.2, rotate: [0, 10, -10, 0] }}
+                    exit={{ scale: 0 }}
+                    className="absolute inset-0 m-auto w-max h-max pointer-events-none z-50 text-8xl drop-shadow-2xl"
+                >
+                    🎉
                 </motion.div>
             )}
           </AnimatePresence>

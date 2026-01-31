@@ -155,15 +155,25 @@ export default function GameOne() {
 
   useEffect(() => {
       if (gameState === "playing" && cards.length > 0 && cards.every(c => c.isMatched)) {
-          clearInterval(timerRef.current!);
+          if (timerRef.current) clearInterval(timerRef.current);
           setGameState("finished");
-          // Update Global Analytics just in case, though this modal is specific
+          
+          const finalScore = 100;
+          useGameStore.getState().addHistory({
+              gameType: 'game1',
+              score: finalScore,
+              timeElapsed: timeElapsed
+          });
+          
+          useGameStore.getState().setLastPlayedGame('game1');
           updateAnalytics({ 
               wrongClicks: (useGameStore.getState().analytics.wrongClicks || 0) + wrongClicks,
               repeatedClicks: (useGameStore.getState().analytics.repeatedClicks || 0) + repeatedClicks,
+              attempts: attempts
           });
+          setStep("summary");
       }
-  }, [cards, gameState, wrongClicks, repeatedClicks, updateAnalytics]);
+  }, [cards, gameState, timeElapsed, wrongClicks, repeatedClicks, updateAnalytics, attempts, setStep]);
 
   // --- Render Helpers ---
   const formatTime = (seconds: number) => {
@@ -176,32 +186,50 @@ export default function GameOne() {
 
   if (gameState === "selecting") {
       return (
-          <div className="min-h-[100svh] bg-yellow-50 flex flex-col items-center p-6 font-quicksand">
-              <div className="w-full max-w-md flex items-center mb-10">
-                  <button onClick={() => setStep("menu")} className="bg-white p-2 rounded-full shadow-md">
-                      <ChevronLeft className="text-gray-600" />
+          <div className="min-h-[100svh] bg-cloud-pattern flex flex-col items-center p-6 font-quicksand relative overflow-hidden">
+             {/* Decorative Blobs */}
+            <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-blob" />
+            <div className="absolute bottom-[-50px] left-[-50px] w-40 h-40 bg-pink-300 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-blob animation-delay-2000" />
+
+              <div className="w-full max-w-md flex items-center justify-between mb-8 mt-4 relative z-10 px-2">
+                  <button 
+                    onClick={() => setStep("menu")} 
+                    className="bg-orange-500 text-white w-12 h-12 flex items-center justify-center rounded-2xl shadow-lg border-b-4 border-orange-700 active:border-b-0 active:translate-y-1 transition-all"
+                  >
+                      <ChevronLeft size={32} strokeWidth={3} />
                   </button>
-                  <h1 className="flex-1 text-center text-xl font-bold text-purple-600 ml-[-40px]">Box Misteri - Pilih Level</h1>
+                  <h1 className="absolute left-0 right-0 text-center text-3xl font-black text-purple-600 drop-shadow-sm pointer-events-none">Pilih Level</h1>
+                  <div className="w-12" /> {/* Spacer for centering */}
               </div>
 
-              <div className="space-y-4 w-full max-w-xs">
-                  {[1, 2, 3].map((lvl) => (
+              <div className="space-y-4 w-full max-w-xs z-10">
+                  {[
+                      { lvl: 1, color: "from-blue-400 to-cyan-400", border: "border-blue-600", shadow: "shadow-blue-200", icon: "👶", label: "Mudah" },
+                      { lvl: 2, color: "from-purple-400 to-fuchsia-400", border: "border-purple-600", shadow: "shadow-purple-200", icon: "👦", label: "Sedang" },
+                      { lvl: 3, color: "from-orange-400 to-red-400", border: "border-orange-600", shadow: "shadow-orange-200", icon: "🧠", label: "Sulit" }
+                  ].map((item) => (
                       <motion.button
-                        key={lvl}
+                        key={item.lvl}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => startGame(lvl as 1|2|3)}
-                        className="w-full bg-purple-400 rounded-2xl p-6 flex flex-col items-center justify-center text-white shadow-lg relative overflow-hidden"
+                        onClick={() => startGame(item.lvl as 1|2|3)}
+                        className={`w-full bg-gradient-to-r ${item.color} rounded-3xl p-4 flex items-center justify-between text-white shadow-xl ${item.shadow} border-b-4 ${item.border} active:border-b-0 active:translate-y-1 transition-all relative overflow-hidden group`}
                       >
-                          <div className="flex gap-1 mb-2">
-                              {Array.from({ length: lvl }).map((_, i) => (
-                                  <Star key={i} fill="yellow" stroke="none" className="drop-shadow-sm" />
-                              ))}
+                           {/* Shine Effect */}
+                           <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-shine" />
+
+                          <div className="flex flex-col items-start">
+                              <div className="flex gap-1 mb-1">
+                                  {Array.from({ length: item.lvl }).map((_, i) => (
+                                      <Star key={i} fill="yellow" stroke="none" className="drop-shadow-sm w-5 h-5 animate-pulse" />
+                                  ))}
+                              </div>
+                              <div className="text-2xl font-black">{item.label}</div>
+                              <div className="text-white/90 text-xs font-bold">
+                                  {item.lvl === 1 ? "2 Kartu" : item.lvl === 2 ? "6 Kartu" : "8 Kartu"}
+                              </div>
                           </div>
-                          <div className="text-2xl font-bold mb-1">Level {lvl}</div>
-                          <div className="text-purple-100 text-sm">
-                              {lvl === 1 ? "2 kartu, 1 pasangan" : lvl === 2 ? "6 kartu, 3 pasangan" : "8 kartu, 4 pasangan"}
-                          </div>
+                          <div className="text-5xl drop-shadow-md">{item.icon}</div>
                       </motion.button>
                   ))}
               </div>
@@ -209,7 +237,7 @@ export default function GameOne() {
       );
   }
 
-  // Playing & Finished share the background
+  // Playing view
   return (
     <div className="min-h-[100svh] bg-cloud-pattern flex flex-col items-center p-4 font-quicksand">
         {/* Header */}
@@ -247,65 +275,6 @@ export default function GameOne() {
                 ))}
             </div>
         </div>
-
-        {/* Result Modal Overlay */}
-        {gameState === "finished" && (
-            <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-                <motion.div 
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    className="bg-white rounded-3xl p-6 w-full max-w-sm flex flex-col items-center shadow-2xl relative"
-                >   
-                    {/* Confetti absolute at top or simply an emoji/icon */}
-                    <div className="mb-2">
-                        <Trophy size={64} className="text-yellow-400 drop-shadow-md" fill="#FACC15" />
-                    </div>
-
-                    <h2 className="text-2xl font-bold text-orange-500 mb-6 flex items-center gap-2">
-                        Luar Biasa! 🎉
-                    </h2>
-
-                    <div className="w-full space-y-3 mb-6">
-                        <div className="flex justify-between items-center bg-orange-50 p-3 rounded-xl">
-                            <div className="flex items-center gap-2 text-gray-600 font-bold"><Timer size={16} /> Waktu</div>
-                            <div className="text-orange-600 font-bold">{formatTime(timeElapsed)}</div>
-                        </div>
-                        <div className="flex justify-between items-center bg-orange-50 p-3 rounded-xl">
-                            <div className="flex items-center gap-2 text-gray-600 font-bold"><Hand size={16} /> Percobaan</div>
-                            <div className="text-orange-600 font-bold">{attempts} kali</div>
-                        </div>
-                        <div className="flex justify-between items-center bg-orange-50 p-3 rounded-xl">
-                            <div className="flex items-center gap-2 text-gray-600 font-bold"><Star size={16} fill="orange" stroke="none" /> Skor</div>
-                            <div className="text-orange-600 font-bold">100</div>
-                        </div>
-                        <div className="flex justify-between items-center bg-orange-50 p-3 rounded-xl">
-                           <div className="text-gray-600 font-bold ml-1">♦♦ Daya Ingat</div>
-                           <div className="text-orange-600 font-bold">Sangat Baik!</div>
-                        </div>
-                         <div className="flex justify-between items-center bg-orange-50 p-3 rounded-xl">
-                           <div className="text-gray-600 font-bold ml-1">🎯 Fokus</div>
-                           <div className="text-orange-600 font-bold">Sangat Fokus!</div>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-4 w-full">
-                        <button 
-                            onClick={() => startGame(level)}
-                            className="flex-1 bg-orange-500 text-white font-bold py-3 rounded-full shadow-lg flex items-center justify-center gap-2 hover:bg-orange-600 transition-colors"
-                        >
-                            <RefreshCw size={18} /> Main Lagi
-                        </button>
-                         <button 
-                            onClick={() => setStep("menu")}
-                            className="flex-1 bg-gray-200 text-gray-700 font-bold py-3 rounded-full shadow-lg flex items-center justify-center gap-2 hover:bg-gray-300 transition-colors"
-                        >
-                            <Home size={18} /> Menu Utama
-                        </button>
-                    </div>
-
-                </motion.div>
-            </div>
-        )}
     </div>
   );
 }
