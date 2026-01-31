@@ -259,9 +259,9 @@ export default function GameOne() {
         {/* Grid Container - Fully Responsive */}
         <div className="w-full max-w-md flex-1 flex flex-col justify-center">
             <div className={`grid gap-3 w-full ${
-                level === 1 ? 'grid-cols-2 max-w-xs mx-auto' : 
-                level === 2 ? 'grid-cols-3' : 
-                'grid-cols-4'
+                level === 1 ? 'grid-cols-2 max-w-[200px] mx-auto' : 
+                level === 2 ? 'grid-cols-3 max-w-[300px] mx-auto' : 
+                'grid-cols-4 max-w-[340px] mx-auto'
             } place-content-center`}>
                 {cards.map(card => (
                     <AnimatedCard

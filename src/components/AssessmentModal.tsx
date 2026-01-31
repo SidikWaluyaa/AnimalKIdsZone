@@ -3,6 +3,7 @@
 import { useGameStore } from "@/store/useGameStore";
 import { motion } from "framer-motion";
 import { RotateCw, Home, Timer, Star, Calculator, Target, BookOpen } from "lucide-react";
+import CuteButton from "./CuteButton";
 
 export default function AssessmentModal() {
   const { currentStep, resetGame, userName, lastPlayedGame, setStep, history, analytics } = useGameStore();
@@ -130,24 +131,25 @@ export default function AssessmentModal() {
         </div>
 
         {/* Buttons */}
-        <div className="flex gap-3 relative z-10">
-             <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+        <div className="flex flex-col gap-3 relative z-10 w-full">
+             <CuteButton
                 onClick={resetGame}
-                className="flex-1 py-4 rounded-[20px] bg-orange-500 text-white font-bold shadow-[0_4px_0_theme(colors.orange.700)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2"
+                size="lg"
+                icon={<RotateCw size={24} />}
+                className="w-full"
             >
-                <RotateCw size={20} /> Main Lagi
-            </motion.button>
+                Main Lagi
+            </CuteButton>
             
-            <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+            <CuteButton
+                variant="secondary"
                 onClick={() => setStep("menu")}
-                className="flex-1 py-4 rounded-[20px] bg-gray-100 text-gray-600 font-bold shadow-[0_4px_0_theme(colors.gray.200)] active:shadow-none active:translate-y-1 transition-all flex items-center justify-center gap-2 border border-gray-200"
+                size="md"
+                icon={<Home size={20} />}
+                className="w-full"
             >
-                <Home size={20} /> Menu Utama
-            </motion.button>
+                Menu Utama
+            </CuteButton>
         </div>
 
       </motion.div>
