@@ -66,5 +66,42 @@ export default function useGameAudio() {
     }
   }, []);
 
-  return { playFlip, playMatch, playError, speak };
+  const bgMusicRef = useRef<HTMLAudioElement | null>(null);
+
+  const playBackgroundMusic = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    if (!bgMusicRef.current) {
+      bgMusicRef.current = new Audio('/audio/life-of-riley.mp3');
+      bgMusicRef.current.loop = true;
+      bgMusicRef.current.volume = 0.3;
+    }
+    
+    bgMusicRef.current.play().catch(err => {
+      console.warn("Autoplay blocked or audio failed:", err);
+    });
+  }, []);
+
+  const stopBackgroundMusic = useCallback(() => {
+    if (bgMusicRef.current) {
+      bgMusicRef.current.pause();
+    }
+  }, []);
+
+  const toggleBackgroundMusic = useCallback(() => {
+    if (bgMusicRef.current) {
+      if (bgMusicRef.current.paused) {
+        bgMusicRef.current.play().catch(err => console.warn(err));
+      } else {
+        bgMusicRef.current.pause();
+      }
+      return !bgMusicRef.current.paused;
+    }
+    return false;
+  }, []);
+
+  const isMusicPlaying = useCallback(() => {
+    return bgMusicRef.current ? !bgMusicRef.current.paused : false;
+  }, []);
+
+  return { playFlip, playMatch, playError, speak, playBackgroundMusic, stopBackgroundMusic, toggleBackgroundMusic, isMusicPlaying };
 }

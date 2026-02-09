@@ -25,10 +25,7 @@ export default function GameMenu() {
 
   return (
     <div className="flex flex-col items-center min-h-[100svh] w-full bg-cloud-pattern px-6 py-8 font-quicksand relative overflow-hidden">
-        {/* Decorative Blobs */}
-        <div className="absolute top-[-50px] left-[-50px] w-48 h-48 bg-pink-300 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-blob" />
-        <div className="absolute top-[20%] right-[-50px] w-48 h-48 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-blob animation-delay-2000" />
-        <div className="absolute bottom-[-50px] left-[20%] w-48 h-48 bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-blob animation-delay-4000" />
+        {/* Decorative Blobs removed */}
 
       {/* Header */}
       <motion.div 

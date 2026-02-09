@@ -237,9 +237,7 @@ export default function GameOne() {
   if (gameState === "selecting") {
       return (
           <div className="min-h-[100svh] bg-cloud-pattern flex flex-col items-center p-6 font-quicksand relative overflow-hidden">
-             {/* Decorative Blobs */}
-            <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-blob" />
-            <div className="absolute bottom-[-50px] left-[-50px] w-40 h-40 bg-pink-300 rounded-full mix-blend-multiply filter blur-2xl opacity-60 animate-blob animation-delay-2000" />
+             {/* Decorative Blobs removed */}
 
               <div className="w-full max-w-md flex items-center justify-between mb-8 mt-4 relative z-10 px-2">
                   <button 

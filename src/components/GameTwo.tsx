@@ -165,9 +165,7 @@ export default function GameTwo() {
 
   return (
     <div className="min-h-[100svh] bg-cloud-pattern flex flex-col items-center p-4 font-quicksand relative overflow-hidden">
-        {/* Blobs */}
-        <div className="absolute top-[-50px] left-[-50px] w-32 h-32 bg-green-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob" />
-        <div className="absolute bottom-[-50px] right-[-50px] w-32 h-32 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob animation-delay-2000" />
+        {/* Blobs removed for simplification */}
 
        {/* Header */}
        <div className="w-full max-w-lg flex items-center justify-between mb-2 z-10">

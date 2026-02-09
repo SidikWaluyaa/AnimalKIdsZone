@@ -66,10 +66,7 @@ export default function Onboarding() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[100svh] px-6 py-10 bg-cloud-pattern relative overflow-hidden font-quicksand">
-        {/* Decorative Circles */}
-        <div className="absolute top-[-50px] left-[-50px] w-40 h-40 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" />
-        <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000" />
-        <div className="absolute bottom-[-50px] left-[20%] w-40 h-40 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000" />
+        {/* Decorative Circles removed for simplification */}
 
         {/* Header Animation */}
         <motion.div 

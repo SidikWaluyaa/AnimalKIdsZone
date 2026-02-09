@@ -133,12 +133,22 @@ export default function AssessmentModal() {
         {/* Buttons */}
         <div className="flex flex-col gap-3 relative z-10 w-full">
              <CuteButton
-                onClick={resetGame}
+                onClick={() => setStep(lastPlayedGame || "game1")}
                 size="lg"
                 icon={<RotateCw size={24} />}
                 className="w-full"
             >
                 Main Lagi
+            </CuteButton>
+
+            <CuteButton
+                variant="secondary"
+                onClick={() => setStep(lastPlayedGame || "game1")}
+                size="md"
+                icon={<Star size={20} />}
+                className="w-full border-blue-100 text-blue-500"
+            >
+                Pilih Level
             </CuteButton>
             
             <CuteButton
