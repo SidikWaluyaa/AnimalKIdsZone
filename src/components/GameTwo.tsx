@@ -189,7 +189,7 @@ export default function GameTwo() {
        <motion.div 
          initial={{ y: -20, opacity: 0 }}
          animate={{ y: 0, opacity: 1 }}
-         className="w-full max-w-lg bg-kids-green text-white p-2 md:p-4 rounded-3xl shadow-xl mb-3 md:mb-4 text-center z-10 relative overflow-hidden border-b-8 border-kids-green/40"
+         className="w-full max-w-lg bg-kids-green text-kids-yellow p-2 md:p-4 rounded-3xl shadow-xl mb-3 md:mb-4 text-center z-10 relative overflow-hidden border-b-8 border-kids-green/40"
        >
            <h2 className="text-xl md:text-2xl font-black drop-shadow-md flex items-center justify-center gap-3 text-shadow-kids">
                {currentQ.text} 
