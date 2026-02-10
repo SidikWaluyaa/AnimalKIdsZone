@@ -65,7 +65,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[100svh] px-6 py-10 bg-cloud-pattern relative overflow-hidden font-quicksand">
+    <div className="flex flex-col items-center justify-center min-h-[100svh] px-6 py-10 relative overflow-hidden font-quicksand">
         {/* Decorative Circles removed for simplification */}
 
         {/* Header Animation */}

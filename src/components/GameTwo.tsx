@@ -164,7 +164,7 @@ export default function GameTwo() {
   };
 
   return (
-    <div className="min-h-[100svh] bg-cloud-pattern flex flex-col items-center p-4 font-quicksand relative overflow-hidden">
+    <div className="min-h-[100svh] flex flex-col items-center p-4 font-quicksand relative overflow-hidden">
         {/* Blobs removed for simplification */}
 
        {/* Header */}

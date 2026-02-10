@@ -21,7 +21,7 @@ export default function LearningStats() {
       <motion.div 
         initial={{ scale: 0.8, opacity: 0, rotate: -2 }}
         animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        className="bg-cloud-pattern bg-yellow-50 rounded-[40px] w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border-8 border-white relative"
+        className="bg-yellow-50 rounded-[40px] w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border-8 border-white relative"
       > 
         {/* Decorative Blobs */}
         <div className="absolute top-[-40px] right-[-40px] w-32 h-32 bg-orange-300 rounded-full mix-blend-multiply filter blur-2xl opacity-50 animate-blob" />

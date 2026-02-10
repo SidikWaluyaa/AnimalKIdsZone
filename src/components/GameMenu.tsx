@@ -24,7 +24,7 @@ export default function GameMenu() {
   const currentAvatarEmoji = avatar ? avatars[avatar] : "🦁";
 
   return (
-    <div className="flex flex-col items-center min-h-[100svh] w-full bg-cloud-pattern px-6 py-8 font-quicksand relative overflow-hidden">
+    <div className="flex flex-col items-center min-h-[100svh] w-full px-6 py-8 font-quicksand relative overflow-hidden">
         {/* Decorative Blobs removed */}
 
       {/* Header */}

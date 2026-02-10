@@ -13,7 +13,7 @@ export default function Home() {
   const currentStep = useGameStore((state) => state.currentStep);
 
   return (
-    <main className="min-h-[100svh] w-full overflow-hidden bg-sky-50 relative">
+    <main className="min-h-[100svh] w-full overflow-hidden relative">
       {currentStep === "onboarding" && <Onboarding />}
       {currentStep === "menu" && <GameMenu />}
       {currentStep === "game1" && <GameOne />}

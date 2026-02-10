@@ -20,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body
-        className={`${quicksand.variable} font-sans antialiased bg-yellow-50 overflow-hidden`}
+        className={`${quicksand.variable} font-sans antialiased overflow-hidden`}
       >
         {children}
       </body>

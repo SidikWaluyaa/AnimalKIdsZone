@@ -236,7 +236,7 @@ export default function GameOne() {
 
   if (gameState === "selecting") {
       return (
-          <div className="min-h-[100svh] bg-cloud-pattern flex flex-col items-center p-6 font-quicksand relative overflow-hidden">
+          <div className="min-h-[100svh] flex flex-col items-center p-6 font-quicksand relative overflow-hidden">
              {/* Decorative Blobs removed */}
 
               <div className="w-full max-w-md flex items-center justify-between mb-8 mt-4 relative z-10 px-2">
@@ -287,7 +287,7 @@ export default function GameOne() {
 
   // Playing view
   return (
-    <div className="min-h-[100svh] bg-cloud-pattern flex flex-col items-center p-4 font-quicksand">
+    <div className="min-h-[100svh] flex flex-col items-center p-4 font-quicksand">
         {/* Header */}
         <div className="w-full max-w-md flex justify-between items-center mb-6 mt-2">
             <button onClick={() => setGameState("selecting")} className="bg-white p-3 rounded-2xl shadow-lg border-b-4 border-gray-200 active:border-b-0 active:translate-y-1 transition-all">
