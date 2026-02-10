@@ -32,12 +32,11 @@
   text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Forced Light Theme for Kids Game */
+:root {
+  color-scheme: light;
 }
+
 
 body {
   background-image: url('/forest.jpg');
