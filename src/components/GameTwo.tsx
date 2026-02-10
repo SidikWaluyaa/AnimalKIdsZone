@@ -189,9 +189,9 @@ export default function GameTwo() {
        <motion.div 
          initial={{ y: -20, opacity: 0 }}
          animate={{ y: 0, opacity: 1 }}
-         className="w-full max-w-lg bg-green-500 text-white p-4 rounded-3xl shadow-xl mb-4 text-center z-10 relative overflow-hidden border-b-8 border-green-700"
+         className="w-full max-w-lg bg-kids-green text-white p-2 md:p-4 rounded-3xl shadow-xl mb-3 md:mb-4 text-center z-10 relative overflow-hidden border-b-8 border-kids-green/40"
        >
-           <h2 className="text-xl md:text-2xl font-black drop-shadow-md flex items-center justify-center gap-3">
+           <h2 className="text-xl md:text-2xl font-black drop-shadow-md flex items-center justify-center gap-3 text-shadow-kids">
                {currentQ.text} 
                <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 2 }}>👇</motion.span>
            </h2>
@@ -201,7 +201,7 @@ export default function GameTwo() {
        <div className="w-full max-w-lg flex-1 flex flex-col z-10">
           
           {/* ITEM POOL (Upper Area) */}
-          <div className="bg-white/60 backdrop-blur-md rounded-3xl p-4 mb-4 min-h-[140px] flex items-center justify-center gap-2 flex-wrap shadow-lg border-2 border-white/50 relative">
+          <div className="bg-white/60 backdrop-blur-md rounded-3xl p-3 md:p-4 mb-3 min-h-[120px] md:min-h-[140px] flex items-center justify-center gap-2 flex-wrap shadow-lg border-2 border-white/50 relative">
              <div className="absolute top-2 left-4 text-xs font-bold text-gray-400 flex items-center gap-1 uppercase tracking-wider">
                 <MousePointer2 size={12} /> Ambil dari sini
              </div>
@@ -218,7 +218,7 @@ export default function GameTwo() {
                     whileDrag={{ scale: 1.2, zIndex: 100, rotate: [0, -10, 10, 0] }}
                     whileHover={{ scale: 1.1, cursor: 'grab', rotate: [0, -5, 5, 0] }}
                     onDragEnd={(e, info) => checkDrop(e, info, item)}
-                    className="w-20 h-20 bg-white rounded-2xl shadow-[0_4px_0_theme(colors.gray.200)] border-2 border-gray-100 p-2 flex items-center justify-center touch-none cursor-grab active:cursor-grabbing"
+                    className="w-14 h-14 md:w-20 md:h-20 bg-white rounded-2xl shadow-[0_4px_0_theme(colors.gray.200)] border-2 border-gray-100 p-1 md:p-2 flex items-center justify-center touch-none cursor-grab active:cursor-grabbing"
                  >
                     <img src={item.image} alt={item.type} className="w-full h-full object-contain pointer-events-none select-none drop-shadow-sm" />
                  </motion.div>
@@ -230,7 +230,7 @@ export default function GameTwo() {
           </div>
 
           {/* TARGET ZONES (Lower Area) */}
-          <div className="grid grid-cols-2 gap-3 mb-4 flex-1">
+          <div className="grid grid-cols-2 gap-2 md:gap-3 mb-3 flex-1 overflow-hidden">
               {[
                 { id: "Kandang", bg: "bg-orange-100", border: "border-orange-300", icon: "🎋" },
                 { id: "Taman", bg: "bg-green-100", border: "border-green-300", icon: "🌳" },
@@ -242,8 +242,8 @@ export default function GameTwo() {
                     ref={el => { zonesRef.current[idx] = el }}
                     className={`rounded-3xl ${zone.bg} border-4 ${zone.border} ${currentQ.targetZone === zone.id ? "ring-4 ring-yellow-400 scale-[1.02] shadow-xl bg-opacity-100 border-solid" : "opacity-70 grayscale-[0.3] border-dashed border-2"} flex flex-col items-center p-2 relative transition-all duration-300`}
                   >
-                      <div className="text-sm font-bold opacity-50 mb-1 uppercase tracking-widest">{zone.id}</div>
-                      <div className="text-4xl mb-2 opacity-50">{zone.icon}</div>
+                      <div className="text-xs md:text-sm font-bold opacity-50 mb-0.5 md:mb-1 uppercase tracking-widest">{zone.id}</div>
+                      <div className="text-3xl md:text-4xl mb-1 md:mb-2 opacity-50">{zone.icon}</div>
 
                       {/* Stacked Items Container */}
                       <div className="flex flex-wrap justify-center items-center content-center gap-1 w-full h-full p-1 overflow-hidden">

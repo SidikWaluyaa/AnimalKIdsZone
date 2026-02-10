@@ -41,7 +41,7 @@ export default function MusicToggle() {
   return (
     <button
       onClick={handleToggle}
-      className={`fixed top-4 right-4 z-[100] p-3 rounded-full shadow-lg transition-all duration-300 ${
+      className={`fixed bottom-4 right-4 z-[100] p-3 rounded-full shadow-lg transition-all duration-300 ${
         playing 
           ? "bg-white/80 text-orange-500 scale-100 hover:scale-110" 
           : "bg-gray-200/50 text-gray-500 scale-95 opacity-80"

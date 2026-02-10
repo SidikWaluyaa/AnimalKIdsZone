@@ -51,15 +51,15 @@ export default function CuteButton({
       onClick={handleClick}
       disabled={disabled}
       className={`
-        ${variants[variant]} 
-        ${sizes[size]} 
-        font-black flex items-center justify-center gap-2 
+        ${variants[variant]}
+        ${sizes[size]}
+        font-black flex items-center justify-center gap-2
         shadow-lg transition-all active:border-b-0 active:translate-y-[2px] disabled:opacity-50 disabled:cursor-not-allowed
         ${className}
       `}
     >
       {icon && <span className="drop-shadow-sm">{icon}</span>}
-      <span className="drop-shadow-sm">{children}</span>
+      <span className="drop-shadow-sm text-shadow-soft">{children}</span>
     </motion.button>
   );
 }

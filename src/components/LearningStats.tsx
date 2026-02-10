@@ -30,8 +30,8 @@ export default function LearningStats() {
         {/* Header */}
         <div className="flex justify-between items-center p-6 pb-2 z-10 relative">
             <div className="flex flex-col">
-                <h2 className="flex items-center gap-2 text-2xl font-black text-purple-600 drop-shadow-sm">
-                    <Trophy className="text-yellow-400" fill="gold" size={32} />
+                <h2 className="flex items-center gap-2 text-2xl font-black text-kids-purple drop-shadow-sm text-shadow-kids">
+                    <Trophy className="text-kids-yellow" fill="currentColor" size={32} />
                     Hasil Belajar
                 </h2>
                 <span className="text-gray-500 font-bold ml-1 text-sm">Hebat kamu, {userName}!</span>

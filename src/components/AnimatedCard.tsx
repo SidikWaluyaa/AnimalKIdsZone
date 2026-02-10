@@ -59,7 +59,7 @@ export default function AnimatedCard({ content, image, isFlipped, isMatched, isH
                     />
                 </div>
             ) : (
-                <span className="text-5xl">{content}</span>
+                <span className="text-kids-purple font-black text-xl text-shadow-soft">{content}</span>
             )}
         </div>
       </motion.div>

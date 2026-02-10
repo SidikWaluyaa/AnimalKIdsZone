@@ -84,24 +84,24 @@ export default function Onboarding() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-sm space-y-8 text-center z-10"
       >
-        <h1 className="text-4xl font-black text-purple-600 mb-2 drop-shadow-sm tracking-tight">
+        <h1 className="text-4xl font-black text-kids-purple mb-2 drop-shadow-sm tracking-tight text-shadow-kids">
           Dunia Hewan Ceria!
         </h1>
 
         <div className="space-y-6">
           <div className="text-left group">
-            <label className="block text-purple-700 font-bold mb-2 ml-4 text-lg">Siapa namamu?</label>
+            <label className="block text-kids-green font-bold mb-2 ml-4 text-lg text-shadow-kids">Siapa namamu?</label>
             <input
               type="text"
               value={inputName}
               onChange={(e) => setInputName(e.target.value)}
               placeholder="Tulis nama disini..."
-              className="w-full h-16 rounded-full border-4 border-purple-200 px-8 text-2xl text-purple-800 focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-200 transition-all font-bold placeholder:text-purple-300 bg-white shadow-lg"
+              className="w-full h-16 rounded-full border-4 border-kids-orange/20 px-8 text-2xl text-kids-brown focus:outline-none focus:border-kids-orange focus:ring-4 focus:ring-kids-orange/20 transition-all font-bold placeholder:text-kids-orange/30 bg-white shadow-lg"
             />
           </div>
 
           <div className="text-left">
-            <label className="block text-purple-700 font-bold mb-2 ml-4 text-lg">Pilih teman main:</label>
+            <label className="block text-kids-green font-bold mb-2 ml-4 text-lg text-shadow-kids">Pilih teman main:</label>
             <div className="grid grid-cols-3 gap-4">
               {avatars.map((ava, i) => (
                 <motion.button

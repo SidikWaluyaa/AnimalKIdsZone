@@ -36,8 +36,8 @@ export default function GameMenu() {
         <div className="bg-white p-4 rounded-full shadow-lg border-4 border-orange-100 mb-2">
             <div className="text-6xl animate-bounce">{currentAvatarEmoji}</div>
         </div>
-        <h1 className="text-3xl font-black text-orange-600 text-center drop-shadow-sm mb-1">Dunia Hewan Ceria</h1>
-        <p className="text-orange-500 font-bold bg-white/60 px-4 py-1 rounded-full backdrop-blur-sm">
+        <h1 className="text-3xl font-black text-kids-orange text-center drop-shadow-sm mb-1 text-shadow-kids">Dunia Hewan Ceria</h1>
+        <p className="text-kids-purple font-bold bg-white/80 px-4 py-1 rounded-full backdrop-blur-sm shadow-sm ring-2 ring-white/50">
             Halo, {userName || "Teman"}! 👋
         </p>
       </motion.div>
@@ -99,7 +99,7 @@ export default function GameMenu() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setStep("stats")}
-        className="mb-4 bg-white px-8 py-4 rounded-full shadow-lg text-orange-500 font-bold flex items-center gap-3 border-b-4 border-orange-100 active:border-b-0 active:translate-y-1 z-10"
+        className="mb-4 bg-white px-8 py-4 rounded-full shadow-lg text-kids-orange font-bold flex items-center gap-3 border-b-4 border-kids-orange/20 active:border-b-0 active:translate-y-1 z-10"
       >
         <Star size={24} fill="orange" stroke="none" /> Lihat Prestasi Saya
       </motion.button>

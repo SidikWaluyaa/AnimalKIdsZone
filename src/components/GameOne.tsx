@@ -246,7 +246,7 @@ export default function GameOne() {
                   >
                       <ChevronLeft size={32} strokeWidth={3} />
                   </button>
-                  <h1 className="absolute left-0 right-0 text-center text-3xl font-black text-purple-600 drop-shadow-sm pointer-events-none">Pilih Level</h1>
+                  <h1 className="absolute left-0 right-0 text-center text-3xl font-black text-kids-purple drop-shadow-sm pointer-events-none text-shadow-kids">Pilih Level</h1>
                   <div className="w-12" /> {/* Spacer for centering */}
               </div>
 
